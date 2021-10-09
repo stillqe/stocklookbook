@@ -10,6 +10,15 @@
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
     <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="/static/script/interaction.js"></script>
+	<script>
+		$(document).ready(function() {
+    		$(document).on('click','.radio', function() {
+        		$(this).hide();
+    		});
+    	});
+	</script>
 </head>
 
 <body>
@@ -19,91 +28,108 @@
     <a class="navbar-brand" href="#">
       <img src="/static/img/stocklookbook-logo.png" alt="" width="40" height="40">
     </a>
-    <form class="d-flex my-auto">
-        <input class="form-control me-2" type="search" placeholder="Search stocks" aria-label="Search">
+    <form class="d-flex my-auto" action="http://localhost:3001/" method="GET">
+        <input class="form-control me-1 bg-dark" type="text" name="q" placeholder="Search stocks" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Go</button>
       </form>
   </div>
 </nav>
-
 <!--middle section-->
-<div class="row">
-
-    <div class="container-fluid">
-		<div class="flex-row m-2 gap-2">
-			<button type="button" class="btn btn-outline-success rounded-pill">Most Popular</button>
-			<button type="button" class="btn btn-outline-success rounded-pill">Top Performance</button>
-			<button type="button" class="btn btn-outline-success rounded-pill">Most Dividend</button>
-			<button type="button" class="btn btn-outline-success rounded-pill">Most Versatile</button>
-			<button type="button" class="btn btn-outline-success rounded-pill">My List</button>
-		</div>
-		<div class="text-center">
-			 <div btn-group" role="group" aria-label="Basic radio toggle button group">
-				<input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-				<label class="btn btn-outline-primary" for="btnradio1">1M</label>
-
-				<input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-				<label class="btn btn-outline-primary" for="btnradio2">6M</label>
-
-				<input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off" checked>
-				<label class="btn btn-outline-primary" for="btnradio3">1Y</label>
-
-				<input type="radio" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off">
-				<label class="btn btn-outline-primary" for="btnradio4">3Y</label>
-
-				<input type="radio" class="btn-check" name="btnradio" id="btnradio5" autocomplete="off">
-				<label class="btn btn-outline-primary" for="btnradio5">5Y</label>
-			</div>
+<div class="row bg-dark">
+    <div class="container-fluid scrolling-wrapper flex-nowrap">
+		<div class="btn-group btn-group-toggle flex-row text-nowrap ms-2 gap-2 " data-toggle="buttons">
+			<p><a href="/most-active" class="btn btn-outline-info rounded-pill">Most Active</a></p>
+			<p><a href="/top-gainers" class="btn btn-outline-info rounded-pill">Top Gainers</a></p>
+			<p><a href="/top-losers" class="btn btn-outline-info rounded-pill">Top Losers</a></p>
+			<p><a href="/most-volatile" class="btn btn-outline-info rounded-pill">Most Versatile</a></p>
+			<p><a href="/mega-stocks" class="btn btn-outline-info rounded-pill">Mega stocks</a></p>
+			<p><a href="/top-news" class="btn btn-outline-info rounded-pill">Top News</a></p>
+			<p><a href="/top-dividend" class="btn btn-outline-info rounded-pill">Top Dividend</a></p>
+			<p><a href="/all" class="btn btn-outline-info rounded-pill">All</a></p>
 		</div>
 	</div>
-
-
-    	<div class="scrolling-wrapper row flex-row flex-nowrap mt-4 pb-4 pt-2">
-			<div class="card" style="width: 8rem;">
-				<img src="/static/stocks/AAPL.svg" class="card-img-top" alt="...">
-				<div class="card-body">
-					AAPL
-				</div>
-			</div>
-			<div class="card bg-dark" style="width: 12rem;">
-				<img src="..." class="card-img-top" alt="...">
-				<div class="card-body">
-					<h5 class="card-title">AAPL</h5>
-				</div>
-			</div>
-			<div class="card" style="width: 12rem;">
-				<img src="..." class="card-img-top" alt="...">
-				<div class="card-body">
-					<h5 class="card-title">AAPL</h5>
-				</div>
-			</div>
-			<div class="card" style="width: 12rem;">
-				<img src="..." class="card-img-top" alt="...">
-				<div class="card-body">
-					<h5 >AAPL</h5>
-				</div>
-			</div>
-			<div class="card" style="width: 12rem;">
-				<img src="..." class="card-img-top" alt="...">
-				<div class="card-body">
-					<h5 class="card-title">AAPL</h5>
-				</div>
-			</div>
-				<div class="card" style="width: 12rem;">
-					<div class="card card-block card-2"></div>
-				</div>
-				<div class="col-sm">
-					<div class="card card-block card-4"></div>
-				</div>
-				<div class="col-sm">
-					<div class="card card-block card-5">
-						<img src="/static/stocks/AAPL.svg" class="card-img-top" alt="...">
-					</div>
-
-				</div>
-
-    </div>
+<div class="row justify-content-md-center mt-2 p-0">
+	<ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">1m</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">3m</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">1y</button>
+  </li>
+</ul>
 </div>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+	  	<div class="row container-fluid p-0 ms-2">
+			{% for stock in stocks %}
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="/static/stocks/{{stock.ticker}}_1m.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<!--<p class="card-text">{{stock.perf_y}}</p>-->
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{stock.ticker}}</h5>
+					<h6 class="d-inline-block text-truncate"  style="max-width: 5rem;">{{stock.change}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+	</div>
+  </div>
+  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+	  	<div class="row container-fluid p-0 ms-2">
+			{% for stock in stocks %}
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="/static/stocks/{{stock.ticker}}_3m.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<!--<p class="card-text">{{stock.perf_y}}</p>-->
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{stock.ticker}}</h5>
+					<h6 class="d-inline-block text-truncate"  style="max-width: 5rem;">{{stock.change}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+	</div>
+  </div>
+  <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+	  	<div class="row container-fluid p-0 ms-2">
+			{% for stock in stocks %}
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="/static/stocks/{{stock.ticker}}_1y.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<!--<p class="card-text">{{stock.perf_y}}</p>-->
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{stock.ticker}}</h5>
+					<h6 class="d-inline-block text-truncate"  style="max-width: 5rem;">{{stock.change}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+	</div>
+  </div>
+</div>
+
+<!--	<div id="display" class="scrolling-wrapper row flex-row flex-nowrap m-1 pb-4 pt-2">
+			{% for stock in stocks %}
+
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="/static/stocks/{{ticker}}_2y.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<p class="card-text">%</p>
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{ticker}}</h5>
+					<h6>{{stock.Company}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+	</div>-->
+
+
+
 </div>
 
 
