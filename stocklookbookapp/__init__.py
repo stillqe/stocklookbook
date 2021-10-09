@@ -20,7 +20,7 @@ def init_app():
         #init.load_db(db)
 
         sched = BackgroundScheduler(daemon=True)
-        sched.add_job(init.load_db, trigger='interval', args=[db], minutes=5)
+        sched.add_job(init.load_db, trigger='interval', args=[db], minutes=60)
         sched.start()
 
         return app
