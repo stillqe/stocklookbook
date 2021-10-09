@@ -12,6 +12,7 @@ class Config:
     SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 class ProdConfig(Config):
@@ -24,5 +25,6 @@ class ProdConfig(Config):
 class DevConfig(Config):
     FLASK_ENV = 'development'
     DEBUG = True
+    use_reloader = False
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///stocklists.db'
