@@ -27,4 +27,4 @@ class DevConfig(Config):
     DEBUG = True
     use_reloader = False
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///stocklists.db'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://stillqe:3NICEtown!@stocklookbookdb.postgres.database.azure.com/postgres?sslmode=require'

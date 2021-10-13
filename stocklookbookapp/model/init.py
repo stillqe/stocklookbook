@@ -40,7 +40,7 @@ def load_model(db, name, signal='', filters=None):
             new_stock = Stock(ticker=ticker,
                               company=info['Company'],
                               sector=info['Sector'],
-                              cap=info['Market Cap'],
+                              #cap=info['Market Cap'],
                               pe=info['P/E'],
                               perf_w=info['Perf Week'],
                               perf_m=info['Perf Month'],
