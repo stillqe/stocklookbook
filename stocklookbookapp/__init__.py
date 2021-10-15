@@ -6,7 +6,7 @@ db = SQLAlchemy()
 
 def init_app():
     app = Flask(__name__)
-    app.config.from_object('config.ProdConfig')
+    app.config.from_object('config.TestConfig')
     db.init_app(app)
     db.app = app
 
@@ -19,9 +19,9 @@ def init_app():
         print("load db")
         #init.load_db(db)
 
-        sched = BackgroundScheduler(daemon=True)
-        sched.add_job(init.load_db, trigger='interval', args=[db], minutes=60)
-        sched.start()
+        # sched = BackgroundScheduler(daemon=True)
+        # sched.add_job(init.load_db, trigger='interval', args=[db], minutes=60)
+        # sched.start()
 
         return app
 
