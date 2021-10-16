@@ -148,7 +148,7 @@ class StockContainer:
                             self._get_color(stock.pe, pallete)
                             )
 
-            fig.savefig("stocklookbookapp/static/stocks/" + stock.ticker + "_" + period + ".svg", bbox_inches='tight',
+            fig.savefig("/stocks/" + stock.ticker + "_" + period + ".svg", bbox_inches='tight',
                         pad_inches=0.0, format="svg")
             plt.close()  # this gets rid of the plot so it doesn't appear in the cell
 
