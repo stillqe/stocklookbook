@@ -1,24 +1,14 @@
 """Flask configuration."""
 from os import environ, path
 
-from dotenv import load_dotenv
-basedir = path.abspath(path.dirname(__file__))
-load_dotenv(path.join(basedir, '.env'))
 
-database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}?sslmode=require'.format(
-    dbuser=environ.get('DBUSER'),
-    dbpass=environ.get('DBPASS'),
-    dbhost=environ.get('DBHOST'),
-    dbname=environ.get('DBNAME')
-)
+
 
 class Config:
     """Base config."""
-    SECRET_KEY = environ.get('SECRET_KEY')
-    SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
+
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
-    SQLALCHEMY_DATABASE_URI = database_uri
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
@@ -27,12 +17,36 @@ class ProdConfig(Config):
     DEBUG = False
     TESTING = False
 
+    database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}?sslmode=require'.format(
+        dbuser=environ.get('DBUSER'),
+        dbpass=environ.get('DBPASS'),
+        dbhost=environ.get('DBHOST'),
+        dbname=environ.get('DBNAME')
+    )
+    SQLALCHEMY_DATABASE_URI = database_uri
+    SECRET_KEY = environ.get('SECRET_KEY')
+    SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
+
 
 class DevConfig(Config):
+    from dotenv import load_dotenv
+    basedir = path.abspath(path.dirname(__file__))
+    load_dotenv(path.join(basedir, '.env'))
+
     FLASK_ENV = 'development'
     DEBUG = True
     use_reloader = False
     TESTING = True
+
+    database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}?sslmode=require'.format(
+        dbuser=environ.get('DBUSER'),
+        dbpass=environ.get('DBPASS'),
+        dbhost=environ.get('DBHOST'),
+        dbname=environ.get('DBNAME')
+    )
+    SQLALCHEMY_DATABASE_URI = database_uri
+    SECRET_KEY = environ.get('SECRET_KEY')
+    SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
 
 class TestConfig:
     SECRET_KEY = '0AK8GsHF7tCdDBz9tJHRkQ'
