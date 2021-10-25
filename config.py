@@ -10,7 +10,7 @@ class Config:
     STATIC_FOLDER = 'static'
     TEMPLATES_FOLDER = 'templates'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
+    SQLALCHEMY_ECHO = False
 
 class ProdConfig(Config):
     FLASK_ENV = 'production'
@@ -47,6 +47,8 @@ class DevConfig(Config):
     SQLALCHEMY_DATABASE_URI = database_uri
     SECRET_KEY = environ.get('SECRET_KEY')
     SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
+
+    AZURE_STORAGE_CONNECTION_STRING = environ.get('AZURE_STORAGE_CONNECTION_STRING')
 
 class TestConfig:
     SECRET_KEY = '0AK8GsHF7tCdDBz9tJHRkQ'

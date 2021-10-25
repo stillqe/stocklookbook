@@ -6,6 +6,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.path as mpath
 import matplotlib.patches as mpatches
+import tempfile
+from io import BytesIO
+from azure.storage.blob import BlobServiceClient, BlobClient, ContentSettings
+
+
+MY_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=stocklookbook;AccountKey=1R3UxnJ9muVgudoZcOfQjdouwCyAozOlQXNrqQBaLj5qg70ZjBxEv975olev8bPdh8qJfwnvWW9NDiHvrJSzqw==;EndpointSuffix=core.windows.net'
+
+# Replace with blob container. This should be already created in azure storage.
+MY_IMAGE_CONTAINER = "stocks"
+
 
 plt.style.use('dark_background')
 plt.switch_backend('Agg')
@@ -13,17 +23,6 @@ plt.switch_backend('Agg')
 import math
 import yfinance as yf
 
-
-class PriceHistory(db.Model):
-    """Data model for price history."""
-
-    __tablename__ = 'price_history'
-    id = db.Column(db.Integer, primary_key=True)
-    ticker = db.Column(db.String(8), index=False, unique=False, nullable=False)
-    date = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    price = db.Column(db.Float, index=False, unique=False, nullable=True)
-    returns = db.Column(db.Float, index=False, unique=False, nullable=True)
-    #stock_id = db.Column(db.Integer. db.ForeignKey('stocks.id'))
 
 
 stock_identifier = db.Table('stock_identifier',
@@ -57,9 +56,15 @@ class Stock(db.Model):
     change = db.Column(db.Float, index=False, unique=False, nullable=True)
     volume = db.Column(db.Integer, index=False, unique=False, nullable=True)
 
-    #histories = db.relationship("PriceHistory")
+    #histories = db.relationship("History")
 
-
+class History(db.Model):
+    __tablename__ = 'history'
+    id = db.Column(db.Integer, primary_key=True)
+    ticker = db.Column(db.String(8), index=False, unique=True, nullable=False)
+    date = db.Column(db.DateTime, index=False, unique=False, nullable=False)
+    returns = db.Column(db.Float, index=False, unique=False, nullable=True)
+    #stock_id = db.Column(db.Integer. db.ForeignKey('stocks.id'))
 
 class StockContainer:
     """ Stocks class for calculating stock stats and
@@ -88,7 +93,7 @@ class StockContainer:
         self.visualize(stocks, period='1m')
         self.visualize(stocks, period='3m')
         self.visualize(stocks, period='1y')
-        self.visualize(stocks, period='2y')
+        #self.visualize(stocks, period='2y')
         #self.visualize(Stock.query.all(), '3y')
 
 
@@ -136,6 +141,8 @@ class StockContainer:
         m_perf = self.m_stats[period]["performance"]
         m_vola = self.m_stats[period]["volatility"]
 
+        blob_service_client = BlobServiceClient.from_connection_string(MY_CONNECTION_STRING)
+
         for stock in stocks:
             fig, ax = plt.subplots(figsize=(1, 2))
             ax.patch.set_facecolor('black')
@@ -147,9 +154,19 @@ class StockContainer:
                             stat[period]["low"], stat[period]["high"], stat[period]["current"],
                             self._get_color(stock.pe, pallete)
                             )
+            temp = tempfile.gettempdir()
+            image_stream = BytesIO()
+            file_name = stock.ticker + "_" + period + ".svg"
+            fig.savefig(image_stream, bbox_inches='tight', pad_inches=0.0, format="svg")
+            # reset stream's position to 0
+            image_stream.seek(0)
 
-            fig.savefig("/stocks/" + stock.ticker + "_" + period + ".svg", bbox_inches='tight',
-                        pad_inches=0.0, format="svg")
+            # upload in blob storage
+            blob_client = blob_service_client.get_blob_client(container=MY_IMAGE_CONTAINER,
+                                                                   blob=file_name)
+            image_content_setting = ContentSettings(content_type='image/svg+xml')
+            blob_client.upload_blob(image_stream.read(), overwrite=True, content_settings=image_content_setting)
+
             plt.close()  # this gets rid of the plot so it doesn't appear in the cell
 
     def pillarplot(self, ax, performance, vola1, vola2, low, high, current, color, width=1, height=1):
@@ -179,7 +196,10 @@ class StockContainer:
 
         pp = mpatches.PathPatch(Path(vertices, codes), color=color, alpha=1)
         ax.add_patch(pp)
-        pos = (current - low) / (high - low) * width
+        if high == low:
+            pos = 0
+        else:
+            pos = (current - low) / (high - low) * width
         ax.scatter(pos, 0, color='w', s=10, zorder=2)
 
         ax.axis('off')

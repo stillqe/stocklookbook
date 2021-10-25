@@ -8,12 +8,12 @@ def load_db(db):
     load_model(db, 'mega-stocks', signal='', filters={"Market Cap.": "Mega ($200bln and more)"})
     #load_model(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
     load_model(db, 'top-gainers', signal='Top Gainers')
-    load_model(db, 'top-losers', signal='Top Losers')
+    #load_model(db, 'top-losers', signal='Top Losers')
     #load_model(db, 'most-volatile', signal='Most Volatile')
     #load_model(db, 'top-news', signal='Major News')
 
 
-    sc = StockContainer(Stock.query.all())
+    #sc = StockContainer(Stock.query.all())
 
 def load_model(db, name, signal='', filters=None):
     if filters is None:
