@@ -9,13 +9,12 @@ import matplotlib.patches as mpatches
 import tempfile
 from io import BytesIO
 from azure.storage.blob import BlobServiceClient, BlobClient, ContentSettings
-
+import pandas as pd
 
 MY_CONNECTION_STRING = 'DefaultEndpointsProtocol=https;AccountName=stocklookbook;AccountKey=1R3UxnJ9muVgudoZcOfQjdouwCyAozOlQXNrqQBaLj5qg70ZjBxEv975olev8bPdh8qJfwnvWW9NDiHvrJSzqw==;EndpointSuffix=core.windows.net'
 
 # Replace with blob container. This should be already created in azure storage.
 MY_IMAGE_CONTAINER = "stocks"
-
 
 plt.style.use('dark_background')
 plt.switch_backend('Agg')
@@ -23,7 +22,7 @@ plt.switch_backend('Agg')
 import math
 import yfinance as yf
 
-
+PERIODS = ['1m', '3m', '1y', '2y']
 
 stock_identifier = db.Table('stock_identifier',
                             db.Column('collection_id', db.Integer, db.ForeignKey('collections.id')),
@@ -43,8 +42,11 @@ class Stock(db.Model):
     __tablename__ = 'stocks'
     id = db.Column(db.Integer, primary_key=True)
     ticker = db.Column(db.String(8), index=False, unique=True, nullable=False)
-    # date = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    company = db.Column(db.String(60), index=False, unique=False, nullable=True)
+    date = db.Column(db.Date, server_default=db.func.now(), index=False, unique=False,
+                     nullable=False)
+    updatedAt = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now(), index=False, unique=False,
+                          nullable=False)
+    company = db.Column(db.String(100), index=False, unique=False, nullable=True)
     sector = db.Column(db.String(60), index=False, unique=False, nullable=True)
     cap = db.Column(db.BigInteger, index=False, unique=False, nullable=True)
     pe = db.Column(db.Float, index=False, unique=False, nullable=True)
@@ -56,17 +58,10 @@ class Stock(db.Model):
     change = db.Column(db.Float, index=False, unique=False, nullable=True)
     volume = db.Column(db.Integer, index=False, unique=False, nullable=True)
 
-    #histories = db.relationship("History")
+    # histories = db.relationship("History")
+
 
 class History(db.Model):
-    __tablename__ = 'history'
-    id = db.Column(db.Integer, primary_key=True)
-    ticker = db.Column(db.String(8), index=False, unique=True, nullable=False)
-    date = db.Column(db.DateTime, index=False, unique=False, nullable=False)
-    returns = db.Column(db.Float, index=False, unique=False, nullable=True)
-    #stock_id = db.Column(db.Integer. db.ForeignKey('stocks.id'))
-
-class StockContainer:
     """ Stocks class for calculating stock stats and
     visualizing a stock based on the stats.
 
@@ -78,92 +73,216 @@ class StockContainer:
 
     """
 
+    __tablename__ = 'history'
+    id = db.Column(db.Integer, primary_key=True)
+    ticker = db.Column(db.String(8), index=False, unique=False, nullable=False)
+    date = db.Column(db.Date, index=False, unique=False, nullable=False)
+    close = db.Column(db.Float, index=False, unique=False, nullable=True)
+    volume = db.Column(db.Float, index=False, unique=False, nullable=True)
+    returns = db.Column(db.Float, index=False, unique=False, nullable=True)
+    high = db.Column(db.Float, index=False, unique=False, nullable=True)
+    low = db.Column(db.Float, index=False, unique=False, nullable=True)
+
+    high_1m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    low_1m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    perf_1m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola1_1m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola2_1m = db.Column(db.Float, index=False, unique=False, nullable=True)
+
+    high_3m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    low_3m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    perf_3m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola1_3m = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola2_3m = db.Column(db.Float, index=False, unique=False, nullable=True)
+
+    high_1y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    low_1y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    perf_1y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola1_1y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola2_1y = db.Column(db.Float, index=False, unique=False, nullable=True)
+
+    high_2y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    low_2y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    perf_2y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola1_2y = db.Column(db.Float, index=False, unique=False, nullable=True)
+    vola2_2y = db.Column(db.Float, index=False, unique=False, nullable=True)
+
     def __init__(self, stocks, benchmark="SPY"):
 
-        self.tickers = [stock.ticker for stock in stocks]
+        tickers = [stock.ticker for stock in stocks]
+        self.tickers = set(tickers)
 
-        self.stats = {}
-        for ticker in self.tickers:
-            self.stats[ticker] = {}
-        self.m_stats = {}
+        # self.stats = {}
+        # for ticker in self.tickers:
+        #     self.stats[ticker] = {}
+        # self.m_stats = {}
+        print('history  init')
 
-        self.load_stocks(self.tickers, benchmark, '3y')
-        self.calculate_stats()
-        stocks = Stock.query.all()
-        self.visualize(stocks, period='1m')
-        self.visualize(stocks, period='3m')
-        self.visualize(stocks, period='1y')
-        #self.visualize(stocks, period='2y')
-        #self.visualize(Stock.query.all(), '3y')
+        self.load_history()
 
+        # self.calculate_stats()
+        # stocks = Stock.query.all()
+        # for period in PERIODS:
+        #     self.visualize(stocks, period=period)
 
-    def __repr__(self):
-        """function to represent the instance of the stocks"""
-        return str([stock + ": " + str(info['1y']['performance']) for stock, info in self.stats.items()])
+    def load_history(self):
+        existing_tickers = {ticker[0] for ticker in History.query.with_entities(History.ticker).distinct()}
+
+        new_tickers = self.tickers.difference(existing_tickers)
+        if new_tickers:
+            start = self._get_startdate('2y')
+            self.df_to_sql(new_tickers, start)
+
+        recent = History.query.order_by(History.date.desc()).first()
+        if recent:
+            start = recent.date + datetime.timedelta(days=1)
+            print(start)
+        else:
+            print("no stock history")  # expected to perform only on the first time run
+            start = self._get_startdate('2y')
+
+        # download additional history for already stored stocks
+        if (datetime.date.today() > start):
+            self.df_to_sql(existing_tickers, start)
+
+    def df_to_sql(self, tickers, start):
+        print("downloading new stock history")
+        df = yf.download(tickers=list(tickers), start=start)
+        if df.columns.nlevels > 1:  # multi index column
+            # caculate returns that diff close price from previous date close price
+            returns = np.log(df['Adj Close'] / df['Adj Close'].shift(1))
+            returns.columns = pd.MultiIndex.from_product([['Returns'], returns.columns])
+            concated = pd.concat([df, returns], axis=1)
+            selected = concated.stack(level=[1]).reset_index()[
+                ['Date', 'level_1', 'Adj Close', 'High', 'Low', 'Returns', 'Volume']]
+            selected.rename(columns={'level_1': 'ticker', 'Adj Close': 'Close'}, inplace=True)
+            selected.rename(str.lower, axis='columns', inplace=True)
+
+        else:  # single index column
+            df['Returns'] = np.log(df['Adj Close'] / df['Adj Close'].shift(1))
+            selected = df.reset_index()[['Date', 'Adj Close', 'High', 'Low', 'Returns', 'Volume']]
+            selected['ticker'] = tickers.pop()
+            selected.rename(columns={'Adj Close': 'Close'}, inplace=True)
+            selected.rename(str.lower, axis='columns', inplace=True)
+
+        selected.to_sql("history", con=db.engine, index=False, if_exists="append")
 
     def calculate_stats(self):
         """calcuate performance of each stock on given period and store it to dataframe"""
-        for period in ['1m', '3m', '1y','2y','3y']:
-            start = self._get_startdate(period)
-            m_close = self.market[start:]['Adj Close']
-            m_returns = np.log(m_close / m_close.shift(1))
-            self.m_stats[period] = {'performance': m_close.iloc[-1] / m_close.iloc[0], "volatility": m_returns.std()}
+        for ticker in self.tickers:
+            low = {}
+            high = {}
+            vola1 = {}
+            vola2 = {}
+            perf = {}
+            baseQuery = History.query.filter_by(ticker=ticker)
+            latest = baseQuery.order_by(History.date.desc()).with_entities(History.date).first()[0]
+            for period in PERIODS:
+                start = self._get_startdate(period)
+                halfway = self._get_meddate(period)
+                startprice = baseQuery.filter(History.date > start) \
+                    .order_by(History.date.asc()).with_entities(History.close).first()[0]
+                endprice = baseQuery.filter(History.date == latest).with_entities(History.close).first()[0]
 
-            close = self.data[start:]['Adj Close']
-            low = self.data[start:]['Low']
-            high = self.data[start:]['High']
+                low[period], high[period] = baseQuery.filter(History.date > start).with_entities(
+                    db.func.min(History.low), db.func.max(History.high)).first()
+                vola1[period] = baseQuery.filter(History.date > start, History.date <= halfway).with_entities(
+                    db.func.stddev(History.returns)).first()[0]
+                vola2[period] = baseQuery.filter(History.date > halfway).with_entities(
+                    db.func.stddev(History.returns)).first()[0]
+                perf[period] = endprice / startprice
 
-            for ticker in self.tickers:
-                # to do : exception process when ticker doesn't exist or only one ticker case
+            baseQuery.filter(History.date == latest).update({'low_1m': low['1m'],
+                                                             'high_1m': high['1m'],
+                                                             'vola1_1m': vola1['1m'],
+                                                             'vola2_1m': vola2['1m'],
+                                                             'perf_1m': perf['1m'],
+                                                             'low_3m': low['3m'],
+                                                             'high_3m': high['3m'],
+                                                             'vola1_3m': vola1['3m'],
+                                                             'vola2_3m': vola2['3m'],
+                                                             'perf_3m': perf['3m'],
+                                                             'low_1y': low['1y'],
+                                                             'high_1y': high['1y'],
+                                                             'vola1_1y': vola1['1y'],
+                                                             'vola2_1y': vola2['1y'],
+                                                             'perf_1y': perf['1y'],
+                                                             'low_2y': low['2y'],
+                                                             'high_2y': high['2y'],
+                                                             'vola1_2y': vola1['2y'],
+                                                             'vola2_2y': vola2['2y'],
+                                                             'perf_2y': perf['2y']
+                                                             })
+        db.session.commit()
 
-                s_close = close[ticker].dropna()
-                s_low = low[ticker].dropna()
-                s_high = high[ticker].dropna()
-                if (len(s_close) > 0):
-                    change = s_close.iloc[-1] / s_close.iloc[0]
-                    returns = np.log(s_close / s_close.shift(1))
-                    half = int(len(returns) / 2)
-                    vola1 = returns.iloc[:half].std()
-                    vola2 = returns.iloc[half:].std()
-                    self.stats[ticker][period] = {'performance': change,
-                                                  'volatility1': vola1, 'volatility2': vola2,
-                                                  "low": s_low.min(), "high": s_high.max(), "current": s_close.iloc[-1]}
+        # for period in PERIODS:
+        #     start = self._get_startdate(period)
+        #     m_close = self.market[start:]['Adj Close']
+        #     m_returns = np.log(m_close / m_close.shift(1))
+        #     self.m_stats[period] = {'performance': m_close.iloc[-1] / m_close.iloc[0], "volatility": m_returns.std()}
+        #
+        #     close = self.data[start:]['Adj Close']
+        #     low = self.data[start:]['Low']
+        #     high = self.data[start:]['High']
+        #
+        #     for ticker in self.tickers:
+        #         # to do : exception process when ticker doesn't exist or only one ticker case
+        #
+        #         s_close = close[ticker].dropna()
+        #         s_low = low[ticker].dropna()
+        #         s_high = high[ticker].dropna()
+        #         if (len(s_close) > 0):
+        #             change = s_close.iloc[-1] / s_close.iloc[0]
+        #             returns = np.log(s_close / s_close.shift(1))
+        #             half = int(len(returns) / 2)
+        #             vola1 = returns.iloc[:half].std()
+        #             vola2 = returns.iloc[half:].std()
+        #             self.stats[ticker][period] = {'performance': change,
+        #                                           'volatility1': vola1, 'volatility2': vola2,
+        #                                           "low": s_low.min(), "high": s_high.max(), "current": s_close.iloc[-1]}
 
-    def load_stocks(self, tickers, benchmark, period='1y'):
+    def visualize(self):
 
-        print('downloading benchmark')
-        self.market = yf.download(tickers=benchmark, period=period)
-        print('downloading stock data')
-        self.data = yf.download(tickers=tickers, period=period)
+        baseQuery = History.query.filter_by(ticker='SPY')
+        m_perf, m_vola1, m_vola2 = baseQuery.order_by(History.date.desc()).with_entities(
+            History.perf_1y, History.vola1_1y, History.vola2_1y).first()
 
-    def visualize(self, stocks, pallete='spring', period='1y'):
-
-        m_perf = self.m_stats[period]["performance"]
-        m_vola = self.m_stats[period]["volatility"]
+        m_vola = (m_vola1+m_vola2)/2
 
         blob_service_client = BlobServiceClient.from_connection_string(MY_CONNECTION_STRING)
 
-        for stock in stocks:
+        for ticker in self.tickers:
+            baseQuery = History.query.filter_by(ticker=ticker)
+            latest = baseQuery.order_by(History.date.desc()).with_entities(History.date).first()[0]
+
+            price, perf, vola1, vola2, low, high = History.query.filter_by(ticker=ticker).order_by(History.date.desc())\
+                .with_entities(History.close, History.perf_1y, History.vola1_1y, History.vola2_1y, History.low_1y, History.high_1y).first()
+            pe = Stock.query.filter(Stock.ticker == ticker).with_entities(Stock.pe).first()[0]
             fig, ax = plt.subplots(figsize=(1, 2))
             ax.patch.set_facecolor('black')
-            stat = self.stats[stock.ticker]
+            print(ticker, price, perf, vola1, vola2)
+            if vola1 is None:
+                if vola2 is None:
+                    vola1 = m_vola
+                    vola2 = m_vola
+                else:
+                    vola1 = vola2
 
-            self.pillarplot(ax, stat[period]["performance"] / m_perf,
-                            stat[period]["volatility1"] / m_vola,
-                            stat[period]["volatility2"] / m_vola,
-                            stat[period]["low"], stat[period]["high"], stat[period]["current"],
-                            self._get_color(stock.pe, pallete)
+            self.pillarplot(ax, perf / m_perf,
+                            vola1 / m_vola,
+                            vola2 / m_vola,
+                            low, high, price,
+                            self._get_color(pe)
                             )
             temp = tempfile.gettempdir()
             image_stream = BytesIO()
-            file_name = stock.ticker + "_" + period + ".svg"
+            file_name = ticker + "_" + "1y" + ".svg"
             fig.savefig(image_stream, bbox_inches='tight', pad_inches=0.0, format="svg")
             # reset stream's position to 0
             image_stream.seek(0)
-
             # upload in blob storage
             blob_client = blob_service_client.get_blob_client(container=MY_IMAGE_CONTAINER,
-                                                                   blob=file_name)
+                                                              blob=file_name)
             image_content_setting = ContentSettings(content_type='image/svg+xml')
             blob_client.upload_blob(image_stream.read(), overwrite=True, content_settings=image_content_setting)
 
@@ -188,7 +307,6 @@ class StockContainer:
         c2_right = (bottom_right / 4 + top_right * 3 / 4) - [width * dx2, 0] + [0, dy2]
 
         Path = mpath.Path
-
         codes = [Path.MOVETO, Path.CURVE3, Path.CURVE3, Path.CURVE3, Path.CURVE3, Path.LINETO, Path.CURVE3, Path.CURVE3,
                  Path.CURVE3, Path.CURVE3, Path.CLOSEPOLY]
         vertices = [bottom_left, c1_left, waist_left, c2_left, top_left, top_right, c2_right, waist_right, c1_right,
@@ -229,7 +347,7 @@ class StockContainer:
         return w, dx1, dy1, dx2, dy2
 
     @staticmethod
-    def _get_color(PE, pallete):
+    def _get_color(PE, pallete='spring'):
         """get a color to represent P/E ratio"""
         cm = plt.get_cmap(pallete)
 
@@ -252,3 +370,10 @@ class StockContainer:
         start = datetime.date.today() - delta
         return start
 
+    @staticmethod
+    def _get_meddate(period):
+        day_dic = {'1m': 15, '3m': 46, '6m': 91, '1y': 182, '2y': 365, '3y': 548, '5y': 913}
+
+        delta = dateutil.relativedelta.relativedelta(days=day_dic[period])
+        med = datetime.date.today() - delta
+        return med
