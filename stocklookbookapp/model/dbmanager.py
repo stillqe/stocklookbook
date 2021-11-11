@@ -1,5 +1,5 @@
 from finvizfinance.screener.custom import Custom
-from stocklookbookapp.model.stockdb import Collection, Stock, StockContainer
+from stocklookbookapp.model.stockdb import Collection, Stock, History
 
 def load_db(db):
     print("loading db")
@@ -7,13 +7,13 @@ def load_db(db):
     #load_model(db, 'most-active', signal='Most Active')
     load_model(db, 'mega-stocks', signal='', filters={"Market Cap.": "Mega ($200bln and more)"})
     #load_model(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
-    load_model(db, 'top-gainers', signal='Top Gainers')
+    #load_model(db, 'top-gainers', signal='Top Gainers')
     #load_model(db, 'top-losers', signal='Top Losers')
     #load_model(db, 'most-volatile', signal='Most Volatile')
     #load_model(db, 'top-news', signal='Major News')
 
+    sc = History(Stock.query.all())
 
-    #sc = StockContainer(Stock.query.all())
 
 def load_model(db, name, signal='', filters=None):
     if filters is None:
@@ -24,18 +24,23 @@ def load_model(db, name, signal='', filters=None):
     fcustom.set_filter(signal=signal, filters_dict=filters)
     overview = fcustom.ScreenerView(order='Performance (Month)', ascend=False, columns=customcols)
 
-    print(signal)
-
-    existing_collecction = Collection.query.filter_by(name=name).first()
-    if existing_collecction:
-        existing_collecction.stocks.clear()
+    collecction = Collection.query.filter_by(name=name).first()
+    if collecction:
+        collecction.stocks.clear()
     else:
-        existing_collecction = Collection(name=name)
+        collecction = Collection(name=name)
 
     for ticker, info in overview.set_index('Ticker').T.to_dict().items():
         existing_stock = Stock.query.filter_by(ticker=ticker).first()
         if existing_stock:
-            existing_collecction.stocks.append(existing_stock)
+            Stock.query.filter_by(ticker=ticker).update(dict(pe=info['P/E'],
+                                       perf_w=info['Perf Week'],
+                                       perf_m=info['Perf Month'],
+                                       perf_y=info['Perf Year'],
+                                       price=info['Price'],
+                                       change=info['Change'],
+                                       volume=info['Volume']))
+            collecction.stocks.append(existing_stock)
         else:
             new_stock = Stock(ticker=ticker,
                               company=info['Company'],
@@ -49,12 +54,10 @@ def load_model(db, name, signal='', filters=None):
                               change=info['Change'],
                               volume=info['Volume']
                               )
-            existing_collecction.stocks.append(new_stock)
+            collecction.stocks.append(new_stock)
 
-    db.session.add(existing_collecction)
+    db.session.add(collecction)
     db.session.commit()
-
-
 
 
 
