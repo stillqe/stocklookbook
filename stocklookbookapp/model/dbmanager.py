@@ -6,13 +6,13 @@ import time
 def load_db(db):
     print("loading db")
     start = time.perf_counter()
+    load_collection(db, 'mega-stocks', signal='', filters={"Market Cap.": "Mega ($200bln and more)"})
     load_collection(db, 'most-active', signal='Most Active')
-    # load_collection(db, 'mega-stocks', signal='', filters={"Market Cap.": "Mega ($200bln and more)"})
-    # load_collection(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
-    # load_collection(db, 'top-gainers', signal='Top Gainers')
-    # load_collection(db, 'top-losers', signal='Top Losers')
-    # load_collection(db, 'most-volatile', signal='Most Volatile')
-    # load_collection(db, 'top-news', signal='Major News')
+    load_collection(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
+    load_collection(db, 'top-gainers', signal='Top Gainers')
+    load_collection(db, 'top-losers', signal='Top Losers')
+    load_collection(db, 'most-volatile', signal='Most Volatile')
+    load_collection(db, 'top-news', signal='Major News')
     elapsed = time.perf_counter() - start
     print(f"loading collection completed in {elapsed:0.2f} seconds.")
     load_stock(db, 'SPY')
@@ -21,14 +21,14 @@ def load_db(db):
     stockhistory = History(Stock.query.all())
     elapsed = time.perf_counter() - start
     print(f"History downloading completed in {elapsed:0.2f} seconds.")
-    # start = time.perf_counter()
-    # stockhistory.calculate_stats()
-    # elapsed = time.perf_counter() - start
-    # print(f"Stat calculation completed in {elapsed:0.2f} seconds.")
-    # start = time.perf_counter()
-    # stockhistory.visualize()
-    # elapsed = time.perf_counter() - start
-    # print(f"Visualization completed in {elapsed:0.2f} seconds.")
+    start = time.perf_counter()
+    stockhistory.calculate_stats()
+    elapsed = time.perf_counter() - start
+    print(f"Stat calculation completed in {elapsed:0.2f} seconds.")
+    start = time.perf_counter()
+    stockhistory.visualize()
+    elapsed = time.perf_counter() - start
+    print(f"Visualization completed in {elapsed:0.2f} seconds.")
 
 
 def load_collection(db, name, signal='', filters=None):

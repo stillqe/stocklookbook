@@ -1,0 +1,7 @@
+{% macro nav_link(endpoint, name, collection) %}
+{% if collection == endpoint %}
+    <p><a href="/{{endpoint}}" class="active btn btn-outline-info rounded-pill" >{{name}}</a></p>
+{% else %}
+    <p><a href="/{{endpoint}}" class="btn btn-outline-info rounded-pill" >{{name}}</a></p>
+{% endif %}
+{% endmacro %}

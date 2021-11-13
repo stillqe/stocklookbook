@@ -19,9 +19,9 @@ def init_app():
         print("load db")
         dbmanager.load_db(db)
 
-        sched = BackgroundScheduler(daemon=True)
-        sched.add_job(dbmanager.update_stock, trigger='interval', args=[db], minutes=2)
-        sched.add_job(dbmanager.update_history, trigger='interval', args=[db], hours=6)
-        sched.start()
+        # sched = BackgroundScheduler(daemon=True)
+        # sched.add_job(dbmanager.update_stock, trigger='interval', args=[db], minutes=10)
+        # sched.add_job(dbmanager.update_history, trigger='interval', args=[db], hours=24)
+        # sched.start()
 
         return app

@@ -1,10 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block content %}
 
-</body>
-</html>
+<div class="d-flex flex-row justify-content-center p-0 bg-dark">
+	<ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="false">1m</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">3m</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="true">1y</button>
+  </li>
+</ul>
+</div>
+<div class="tab-content bg-dark" id="pills-tabContent">
+  <div class="tab-pane fade" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+	  	<div class="row container-fluid p-0 ms-2">
+			{% for stock in stocks %}
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="https://stocklookbook.blob.core.windows.net/stocks/{{stock.ticker}}_1m.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<!--<p class="card-text">{{stock.perf_y}}</p>-->
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{stock.ticker}}</h5>
+					<h6 class="d-inline-block text-truncate"  style="max-width: 5rem;">{{stock.change}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+  </div>
+  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+	  	<div class="row container-fluid p-0 ms-2">
+			{% for stock in stocks %}
+			<div class="card text-center bg-black m-1 p-0" style="width: 7rem;">
+				<img src="https://stocklookbook.blob.core.windows.net/stocks/{{stock.ticker}}_3m.svg" class="card-img-top" alt="...">
+				<div class="card-img-overlay text-center">
+					<!--<p class="card-text">{{stock.perf_y}}</p>-->
+				</div>
+				<div class="card-body">
+					<h5 class="card-title">{{stock.ticker}}</h5>
+					<h6 class="d-inline-block text-truncate"  style="max-width: 5rem;">{{stock.change}}</h6>
+				</div>
+			</div>
+			{% endfor %}
+	</div>
+  </div>
+  <div class="tab-pane fade show active" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+	  	<div class="row ms-1 me-1 g-1" data-masonry='{"percentPosition": true }'>
+			{% for stock in stocks %}
+			<div class="col-3 col-xs-3 col-sm-2.4 col-md-2 col-lg-1.5 col-xl-1">
+				<div class="card text-center bg-black m-1 p-0" data-bs-toggle="tooltip" data-bs-placement="top" title={{stock.company}}>
+					<img src="https://stocklookbook.blob.core.windows.net/stocks/{{stock.ticker}}_1y.svg" class="card-img-top" alt="...">
+					<div class="card-body">
+						<h5 class="card-title">{{stock.ticker}}</h5>
+						{% if stock.change == none %}
+							<h6 class="d-inline-block"  style="color: #eee;"> - </h6>
+						{% elif stock.change >= 0 %}
+							<h6 class="d-inline-block text-truncate"  style="color: #0f0;">{{ '{0:0.2f} %'.format(stock.change*100) }} </h6>
+						{% else %}
+							<h6 class="d-inline-block text-truncate"  style= "color: #f00;">{{ '{0:0.2f} %'.format(stock.change*100) }} </h6>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+
+			{% endfor %}
+		</div>
+	</div>
+  </div>
+</div>
+
+{% endblock %}
