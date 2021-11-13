@@ -250,7 +250,6 @@ class History(db.Model):
         m_vola = (m_vola1+m_vola2)/2
 
         blob_service_client = BlobServiceClient.from_connection_string(MY_CONNECTION_STRING)
-
         for ticker in self.tickers:
             baseQuery = History.query.filter_by(ticker=ticker)
             latest = baseQuery.order_by(History.date.desc()).with_entities(History.date).first()[0]
@@ -258,9 +257,8 @@ class History(db.Model):
             price, perf, vola1, vola2, low, high = History.query.filter_by(ticker=ticker).order_by(History.date.desc())\
                 .with_entities(History.close, History.perf_1y, History.vola1_1y, History.vola2_1y, History.low_1y, History.high_1y).first()
             pe = Stock.query.filter(Stock.ticker == ticker).with_entities(Stock.pe).first()[0]
-            fig, ax = plt.subplots(figsize=(1, 2))
+            fig, ax = plt.subplots(figsize=(1.5,perf/m_perf+0.5))
             ax.patch.set_facecolor('black')
-            print(ticker, price, perf, vola1, vola2)
             if vola1 is None:
                 if vola2 is None:
                     vola1 = m_vola
@@ -314,16 +312,17 @@ class History(db.Model):
 
         pp = mpatches.PathPatch(Path(vertices, codes), color=color, alpha=1)
         ax.add_patch(pp)
+        ax.axis('off')
+        ax.set_xlim([-0.25, 1.25])
+        ax.set_ylim([-0.1, top_left[1]+0.4])
+        # ax.set_ylim([-0.1, 3.5])
+        ax.set_aspect('equal', 'box')
+
         if high == low:
             pos = 0
         else:
             pos = (current - low) / (high - low) * width
         ax.scatter(pos, 0, color='w', s=10, zorder=2)
-
-        ax.axis('off')
-        ax.set_xlim([-0.25, 1.25])
-        ax.set_ylim([-0.1, 3.5])
-        ax.set_aspect('equal', 'box')
 
         return
 
