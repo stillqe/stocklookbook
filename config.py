@@ -49,14 +49,3 @@ class DevConfig(Config):
     SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
 
     AZURE_STORAGE_CONNECTION_STRING = environ.get('AZURE_STORAGE_CONNECTION_STRING')
-
-class TestConfig:
-    SECRET_KEY = '0AK8GsHF7tCdDBz9tJHRkQ'
-    SESSION_COOKIE_NAME = environ.get('SESSION_COOKIE_NAME')
-    STATIC_FOLDER = 'static'
-    TEMPLATES_FOLDER = 'templates'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://stillqe:3NICEtown!@stocklookbookdb.postgres.database.azure.com/postgres?sslmode=require'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    FLASK_ENV = 'production'
-    DEBUG = False
-    TESTING = False
