@@ -1,6 +1,6 @@
 from finvizfinance.screener.custom import Custom
-from stocklookbookapp.model.stockdb import Collection, Stock, History
-import numpy as np
+from stocklookbookapp.model.stockdb import Collection, Stock, History, StockContainer
+import asyncio
 import time
 
 def load_db(db):
@@ -8,17 +8,17 @@ def load_db(db):
     start = time.perf_counter()
     load_collection(db, 'mega-stocks', signal='', filters={"Market Cap.": "Mega ($200bln and more)"})
     load_collection(db, 'most-active', signal='Most Active')
-    load_collection(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
-    load_collection(db, 'top-gainers', signal='Top Gainers')
-    load_collection(db, 'top-losers', signal='Top Losers')
-    load_collection(db, 'most-volatile', signal='Most Volatile')
-    load_collection(db, 'top-news', signal='Major News')
+    # load_collection(db, 'top-dividend', filters={"Dividend Yield": "Over 10%"})
+    # load_collection(db, 'top-gainers', signal='Top Gainers')
+    # load_collection(db, 'top-losers', signal='Top Losers')
+    # load_collection(db, 'most-volatile', signal='Most Volatile')
+    # load_collection(db, 'top-news', signal='Major News')
     elapsed = time.perf_counter() - start
     print(f"loading collection completed in {elapsed:0.2f} seconds.")
     load_stock(db, 'SPY')
 
     start = time.perf_counter()
-    stockhistory = History(Stock.query.all())
+    stockhistory = StockContainer(Stock.query.all())
     elapsed = time.perf_counter() - start
     print(f"History downloading completed in {elapsed:0.2f} seconds.")
     start = time.perf_counter()
@@ -26,7 +26,8 @@ def load_db(db):
     elapsed = time.perf_counter() - start
     print(f"Stat calculation completed in {elapsed:0.2f} seconds.")
     start = time.perf_counter()
-    stockhistory.visualize()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(stockhistory.visualize())
     elapsed = time.perf_counter() - start
     print(f"Visualization completed in {elapsed:0.2f} seconds.")
 
