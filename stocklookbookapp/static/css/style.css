@@ -3,7 +3,7 @@
 }
 
 body{
-	background-color: black;
+	background-color: rgb(33, 37, 41);
 	color: #eee;
 	font-family: 'system-ui';
 }
@@ -21,8 +21,7 @@ h5{
 
 h6{
 	font-weight: 500;
-	font-size: 0.6em;
-	font-color: #ddd;
+	font-size: 0.7em;
 }
 
 .subtitle{
@@ -50,4 +49,41 @@ h6{
 
 .card-img-top{
     border-radius: 20px;
+}
+
+.container-period {
+  margin-top: 0;
+  margin-right: 0;
+  margin-left: 0;
+  margin-bottom: 30px;
+  padding: 0;
+  text-align: center;
+}
+
+.container-period li {
+  list-style: none;
+  display: inline-block;
+}
+
+.container-period a {
+  display: block;
+  font-size: 14px;
+  margin: 10px 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 400;
+  line-height: 30px;
+  -webkit-transition: all 0.6s;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  color: #807c7c !important;
+}
+
+.container-period a:hover {
+  color: #eee !important;
+}
+
+.container-period a.active {
+  color: #eee !important;
+  border-bottom: 2px solid white;
 }

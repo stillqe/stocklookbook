@@ -1,3 +1,4 @@
+{% from "macros.html" import nav_link with context %}
 <nav class="navbar navbar-expand-lg navbar-light bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">
@@ -6,15 +7,22 @@
   </div>
 </nav>
 
-<div class="container-fluid scrolling-wrapper flex-nowrap bg-dark">
-    <div class="btn-group btn-group-toggle flex-row text-nowrap gap-2 " data-toggle="buttons">
-        {{ nav_link('most-active', 'Most Active', collection) }}
-        {{ nav_link('mega-stocks', 'Mega stocks', collection) }}
-        {{ nav_link('top-gainers', 'Top Gainers', collection) }}
-        {{ nav_link('top-losers', 'Top Losers', collection) }}
-        {{ nav_link('most-volatile', 'Most Versatile', collection) }}
-        {{ nav_link('top-news', 'Top News', collection) }}
-        {{ nav_link('top-dividend', 'Top Dividend', collection) }}
-        {{ nav_link('all', 'All', collection) }}
+<div class="container-fluid scrolling-wrapper flex-nowrap ps-2">
+    <div class="btn-group btn-group-toggle flex-row text-nowrap gap-2" data-toggle="buttons" id="nav-button">
+        <button class="btn btn-outline-info rounded-pill active" id="mega-stocks">Mega stocks</button>
+        <button class="btn btn-outline-info rounded-pill" id="most-active">Most Active</button>
+        <button class="btn btn-outline-info rounded-pill" id="top-gainers">Top Gainers</button>
+        <button class="btn btn-outline-info rounded-pill" id="top-losers">Top Losers</button>
+        <button class="btn btn-outline-info rounded-pill" id="most-volatile">Most Volatile</button>
+        <button class="btn btn-outline-info rounded-pill" id="top-news">Top News</button>
     </div>
+</div>
+
+<div class="text-center">
+    <ul class="col container-period list-unstyled mb-0" id="period">
+        <li><a class="categories" data-filter="1m">1m</a></li>
+        <li><a class="categories" data-filter="3m">3m</a></li>
+        <li><a class="categories active" data-filter="1y">1y</a></li>
+        <li><a class="categories" data-filter="2y">2y</a></li>
+    </ul>
 </div>
