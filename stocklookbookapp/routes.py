@@ -9,9 +9,10 @@ from stocklookbookapp.model.stockdb import Stock, Collection
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index')
 def index():
-    stocks = Stock.query.all()
+    choice = 'mega-stocks'
+    stocks = Collection.query.filter_by(name=choice).first().stocks
     print("the total number of stocks: {}".format(len(stocks)))
-    return render_template('index.html', stocks=stocks)
+    return render_template('display.html', collection=choice, stocks=stocks, period='1y')
 
 
 @app.route('/<choice>')
@@ -23,4 +24,17 @@ def trendingstocks(choice):
         stocks = Collection.query.filter_by(name=choice).first().stocks
     if stocks is None:
         return print("No stock found")
-    return render_template('index.html', stocks=stocks)
+    return render_template('display.html', collection=choice, stocks=stocks)
+
+
+@app.route('/collection', methods=['GET', 'POST'])
+def collections():
+    choice = request.form['choice']
+    period = request.form['period']
+
+    stocks = Collection.query.filter_by(name=choice).first().stocks
+
+    if stocks is None:
+        return print("No stock found")
+
+    return render_template('display.html', collection=choice, period=period, stocks=stocks)
