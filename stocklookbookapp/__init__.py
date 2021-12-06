@@ -7,6 +7,7 @@ db = SQLAlchemy()
 def init_app():
     app = Flask(__name__)
     app.config.from_object('config.DevConfig')
+    # app.config.from_object('config.ProdConfig')
     db.init_app(app)
     db.app = app
 
@@ -23,5 +24,5 @@ def init_app():
         # sched.add_job(dbmanager.update_stock, trigger='interval', args=[db], minutes=10)
         # sched.add_job(dbmanager.update_history, trigger='interval', args=[db], hours=24)
         # sched.start()
-
+        #
         return app
